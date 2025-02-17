@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "405584408645",
+    "project_id": "android-a2640",
+    "storage_bucket": "android-a2640.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:405584408645:android:846b1d5437fa591cf7b32c",
+        "android_client_info": {
+          "package_name": "com.example.muhaymusicapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKagU71VZdVDXucsuDYPy01OGO8icqzso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:405584408645:android:0acc4175d69ab6c7f7b32c",
+        "android_client_info": {
+          "package_name": "com.example.newusers"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKagU71VZdVDXucsuDYPy01OGO8icqzso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:405584408645:android:0fba1a6c29a047c1f7b32c",
+        "android_client_info": {
+          "package_name": "com.example.task5"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKagU71VZdVDXucsuDYPy01OGO8icqzso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,29 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0' // Add Android Gradle plugin
+        classpath 'com.google.gms:google-services:4.4.0' // Firebase Plugin
+    }
+}
+
+
+
+plugins {
+    id 'org.sonarqube' version '4.0.0.2929'
+    id("com.android.application") version "8.5.2" apply false
+    id("com.android.library") version "8.5.2" apply false
+}
+
+
+
+sonarqube {
+    properties {
+        property 'sonar.projectKey', 'your_project_key'
+        property 'sonar.organization', 'your_organization'
+        property 'sonar.host.url', 'http://your-sonarqube-server.com'
+        property 'sonar.token', 'your_sonarqube_token'
+    }
+}
