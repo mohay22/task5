@@ -21,9 +21,8 @@ plugins {
 
 sonarqube {
     properties {
-        property 'sonar.projectKey', 'your_project_key'
-        property 'sonar.organization', 'your_organization'
-        property 'sonar.host.url', 'http://your-sonarqube-server.com'
-        property 'sonar.token', 'your_sonarqube_token'
+        property 'sonar.projectKey', 'task5'
+        property ("sonar.host.url", "http://localhost:9000")
+        property 'sonar.token', 'sqp_89f9ccefdc118ff34353ac15684e8c22f8aa3d2e'
     }
 }
