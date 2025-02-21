@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/yourusername/https://github.com/mohay22/task5.git' // Replace with your repo
+                git 'https://github.com/mohay22/task5.git' // Replace with your repo
             }
         }
 
