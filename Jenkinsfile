@@ -53,8 +53,11 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_LOGIN')]) {
+                    withCredentials([string(credentialsId: 'sqp_89f9ccefdc118ff34353ac15684e8c22f8aa3d2e', variable: 'SONAR_LOGIN')]) {
                         script {
+                            // Temporarily echo the SonarQube token for debugging
+                            echo "The SonarQube token is: ${SONAR_LOGIN}"
+
                             if (isUnix()) {
                                 sh "./gradlew sonarqube -Dsonar.login=$SONAR_LOGIN"
                             } else {
