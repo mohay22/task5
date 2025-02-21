@@ -55,16 +55,21 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     withCredentials([string(credentialsId: 'sqp_89f9ccefdc118ff34353ac15684e8c22f8aa3d2e', variable: 'SONAR_LOGIN')]) {
                         script {
-                            // Temporarily echo the SonarQube token for debugging
-                            echo "The SonarQube token is: ${SONAR_LOGIN}"
-
                             if (isUnix()) {
-                                sh "./gradlew sonarqube -Dsonar.login=$SONAR_LOGIN"
+                                sh "./gradlew sonarqube -Dsonar.projectKey=task5 -Dsonar.host.url=http://<SONARQUBE_SERVER_IP>:9000 -Dsonar.login=$SONAR_LOGIN"
                             } else {
-                                bat "gradlew.bat sonarqube -Dsonar.login=%SONAR_LOGIN%"
+                                bat "gradlew.bat sonarqube -Dsonar.projectKey=task5 -Dsonar.host.url=http://<SONARQUBE_SERVER_IP>:9000 -Dsonar.login=%SONAR_LOGIN%"
                             }
                         }
                     }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -78,8 +83,11 @@ pipeline {
 
     post {
         always {
-            junit 'app/build/test-results/test*/TEST-*.xml'
-            archiveArtifacts artifacts: 'app/build/outputs/**/*.apk', fingerprint: true
+            // Archive JUnit test results
+           junit 'app/build/test-results/test*/TEST-*.xml'
+
+            // Archive APK files
+            archiveArtifacts artifacts: 'app/build/outputs/apk/**/*.apk', fingerprint: true
         }
         success {
             echo '✅ Build & Tests Passed Successfully!'
