@@ -2,22 +2,26 @@ pipeline {
     agent any
 
     environment {
-        SONAR_SCANNER = "${tool 'sonarQube_server'}/bin/sonar-scanner" // SonarQube Scanner tool
+        SONAR_SCANNER = "${tool 'SonarQube Scanner'}/bin/sonar-scanner" // Ensure correct tool name
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/mohay22/task5.git' // Replace with your repo
+                git 'https://github.com/mohay22/task5.git' // Replace with your repository
             }
         }
 
         stage('Setup JDK & Gradle') {
             steps {
                 script {
-                    def javaHome = tool name: 'JDK17', type: 'jdk'  // Ensure JDK 17 is installed
+                    def javaHome = tool name: 'JDK17', type: 'jdk'
                     env.JAVA_HOME = javaHome
-                    env.PATH = "${javaHome}/bin:${env.PATH}"
+                    if (isUnix()) {
+                        env.PATH = "${javaHome}/bin:${env.PATH}"
+                    } else {
+                        env.PATH = "${javaHome}\\bin;${env.PATH}"
+                    }
                 }
             }
         }
@@ -26,9 +30,9 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh './gradlew clean assembleDebug'  // Linux/macOS
+                        sh './gradlew clean assembleDebug'
                     } else {
-                        bat 'gradlew.bat clean assembleDebug'  // Windows
+                        bat 'gradlew.bat clean assembleDebug'
                     }
                 }
             }
@@ -38,9 +42,9 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh './gradlew testDebugUnitTest'  // Run JUnit tests (Linux/macOS)
+                        sh './gradlew testDebugUnitTest'
                     } else {
-                        bat 'gradlew.bat testDebugUnitTest'  // Windows
+                        bat 'gradlew.bat testDebugUnitTest'
                     }
                 }
             }
@@ -48,12 +52,14 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {  // Ensure SonarQube is configured in Jenkins
-                    script {
-                        if (isUnix()) {
-                            sh './gradlew sonarqube -Dsonar.login=sqp_89f9ccefdc118ff34353ac15684e8c22f8aa3d2e'  // Linux/macOS
-                        } else {
-                            bat 'gradlew.bat sonarqube -Dsonar.login=sqp_89f9ccefdc118ff34353ac15684e8c22f8aa3d2e'  // Windows
+                withSonarQubeEnv('SonarQube') {
+                    withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_LOGIN')]) {
+                        script {
+                            if (isUnix()) {
+                                sh "./gradlew sonarqube -Dsonar.login=$SONAR_LOGIN"
+                            } else {
+                                bat "gradlew.bat sonarqube -Dsonar.login=%SONAR_LOGIN%"
+                            }
                         }
                     }
                 }
@@ -69,8 +75,8 @@ pipeline {
 
     post {
         always {
-            junit 'app/build/test-results/test*/TEST-*.xml'  // Publish JUnit test results
-            archiveArtifacts artifacts: 'app/build/outputs/**/*.apk', fingerprint: true  // Archive APKs
+            junit 'app/build/test-results/test*/TEST-*.xml'
+            archiveArtifacts artifacts: 'app/build/outputs/**/*.apk', fingerprint: true
         }
         success {
             echo '✅ Build & Tests Passed Successfully!'
