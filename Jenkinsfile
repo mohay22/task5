@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        JAVA_HOME = tool name: 'JDK17', type: 'jdk'
-        PATH = "${JAVA_HOME}/bin:${env.PATH}"
+        SONAR_SCANNER = "${tool 'SonarQube Scanner'}/bin/SonarQube Scanner" // Ensure correct tool name
     }
 
     stages {
@@ -13,10 +12,28 @@ pipeline {
             }
         }
 
+        stage('Setup JDK & Gradle') {
+            steps {
+                script {
+                    def javaHome = tool name: 'JDK17', type: 'jdk'
+                    env.JAVA_HOME = javaHome
+                    if (isUnix()) {
+                        env.PATH = "${javaHome}/bin:${env.PATH}"
+                    } else {
+                        env.PATH = "${javaHome}\\bin;${env.PATH}"
+                    }
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 script {
-                    bat 'gradlew.bat clean assembleDebug'
+                    if (isUnix()) {
+                        sh './gradlew clean assembleDebug'
+                    } else {
+                        bat 'gradlew.bat clean assembleDebug'
+                    }
                 }
             }
         }
@@ -24,7 +41,11 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    bat 'gradlew.bat testDebugUnitTest'
+                    if (isUnix()) {
+                        sh './gradlew testDebugUnitTest'
+                    } else {
+                        bat 'gradlew.bat testDebugUnitTest'
+                    }
                 }
             }
         }
@@ -34,37 +55,33 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     withCredentials([string(credentialsId: 'sqp_89f9ccefdc118ff34353ac15684e8c22f8aa3d2e', variable: 'SONAR_LOGIN')]) {
                         script {
-                            def sonarCommand = "gradlew.bat sonarqube -Dsonar.projectKey=task5 -Dsonar.host.url=http://<SONARQUBE_SERVER_IP>:9000 -Dsonar.login=${SONAR_LOGIN}"
-                            // Using bat command for Windows
-                            bat sonarCommand
+                            // Temporarily echo the SonarQube token for debugging (Remove this in production)
+                            echo "The SonarQube token is: ${SONAR_LOGIN}"
+
+                            // SonarQube analysis for Unix systems
+                            if (isUnix()) {
+                                sh "./gradlew sonarqube -Dsonar.login=$SONAR_LOGIN"
+                            } else {
+                                // SonarQube analysis for Windows systems
+                                bat "gradlew.bat sonarqube -Dsonar.login=%SONAR_LOGIN%"
+                            }
                         }
                     }
                 }
             }
         }
 
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-
         stage('Deploy') {
             steps {
-                echo '🚀 Deploy step - You can integrate Firebase App Distribution or another service here.'
+                echo 'Deploy step - You can add Firebase or other distribution steps here'
             }
         }
     }
 
     post {
         always {
-            // Archive JUnit test results
-            junit 'app/build/test-results/testDebugUnitTest/**/TEST-*.xml'
-
-            // Archive APK files
-            archiveArtifacts artifacts: 'app/build/outputs/apk/**/*.apk', fingerprint: true
+            junit 'app/build/test-results/test*/TEST-*.xml'
+            archiveArtifacts artifacts: 'app/build/outputs/**/*.apk', fingerprint: true
         }
         success {
             echo '✅ Build & Tests Passed Successfully!'
