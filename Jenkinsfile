@@ -16,11 +16,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh './gradlew clean assembleDebug'
-                    } else {
-                        bat 'gradlew.bat clean assembleDebug'
-                    }
+                    bat 'gradlew.bat clean assembleDebug'
                 }
             }
         }
@@ -28,11 +24,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh './gradlew testDebugUnitTest'
-                    } else {
-                        bat 'gradlew.bat testDebugUnitTest'
-                    }
+                    bat 'gradlew.bat testDebugUnitTest'
                 }
             }
         }
@@ -42,12 +34,9 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     withCredentials([string(credentialsId: 'sqp_89f9ccefdc118ff34353ac15684e8c22f8aa3d2e', variable: 'SONAR_LOGIN')]) {
                         script {
-                            def sonarCommand = "./gradlew sonarqube -Dsonar.projectKey=task5 -Dsonar.host.url=http://<SONARQUBE_SERVER_IP>:9000 -Dsonar.login=${SONAR_LOGIN}"
-                            if (isUnix()) {
-                                sh sonarCommand
-                            } else {
-                                bat sonarCommand.replace("/", "\\") // Windows path fix
-                            }
+                            def sonarCommand = "gradlew.bat sonarqube -Dsonar.projectKey=task5 -Dsonar.host.url=http://<SONARQUBE_SERVER_IP>:9000 -Dsonar.login=${SONAR_LOGIN}"
+                            // Using bat command for Windows
+                            bat sonarCommand
                         }
                     }
                 }
