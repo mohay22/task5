@@ -2,27 +2,14 @@ pipeline {
     agent any
 
     environment {
-        SONAR_SCANNER = "${tool 'SonarQube Scanner'}/bin/sonar-scanner" // Ensure correct tool name
+        JAVA_HOME = tool name: 'JDK17', type: 'jdk'
+        PATH = "${JAVA_HOME}/bin:${env.PATH}"
     }
 
     stages {
         stage('Checkout') {
             steps {
                 git 'https://github.com/mohay22/task5.git' // Replace with your repository
-            }
-        }
-
-        stage('Setup JDK & Gradle') {
-            steps {
-                script {
-                    def javaHome = tool name: 'JDK17', type: 'jdk'
-                    env.JAVA_HOME = javaHome
-                    if (isUnix()) {
-                        env.PATH = "${javaHome}/bin:${env.PATH}"
-                    } else {
-                        env.PATH = "${javaHome}\\bin;${env.PATH}"
-                    }
-                }
             }
         }
 
@@ -55,10 +42,11 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     withCredentials([string(credentialsId: 'sqp_89f9ccefdc118ff34353ac15684e8c22f8aa3d2e', variable: 'SONAR_LOGIN')]) {
                         script {
+                            def sonarCommand = "./gradlew sonarqube -Dsonar.projectKey=task5 -Dsonar.host.url=http://<SONARQUBE_SERVER_IP>:9000 -Dsonar.login=${SONAR_LOGIN}"
                             if (isUnix()) {
-                                sh "./gradlew sonarqube -Dsonar.projectKey=task5 -Dsonar.host.url=http://<SONARQUBE_SERVER_IP>:9000 -Dsonar.login=$SONAR_LOGIN"
+                                sh sonarCommand
                             } else {
-                                bat "gradlew.bat sonarqube -Dsonar.projectKey=task5 -Dsonar.host.url=http://<SONARQUBE_SERVER_IP>:9000 -Dsonar.login=%SONAR_LOGIN%"
+                                bat sonarCommand.replace("/", "\\") // Windows path fix
                             }
                         }
                     }
@@ -76,7 +64,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                echo 'Deploy step - You can add Firebase or other distribution steps here'
+                echo '🚀 Deploy step - You can integrate Firebase App Distribution or another service here.'
             }
         }
     }
@@ -84,7 +72,7 @@ pipeline {
     post {
         always {
             // Archive JUnit test results
-           junit 'app/build/test-results/test*/TEST-*.xml'
+            junit 'app/build/test-results/testDebugUnitTest/**/TEST-*.xml'
 
             // Archive APK files
             archiveArtifacts artifacts: 'app/build/outputs/apk/**/*.apk', fingerprint: true
